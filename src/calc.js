@@ -1,10 +1,10 @@
 const numberButtons = []
-const operators = [
-  { key: 'divided', ope: (x, y) => x / y},
-  { key: 'multiplied', ope: (x, y) => x * y},
-  { key: 'minus', ope: (x, y) => x - y},
-  { key: 'plus', ope: (x, y) => x + y}
-]
+const operators = {
+  '/': { key: 'divided', ope: (x, y) => x / y},
+  '*': { key: 'multiplied', ope: (x, y) => x * y},
+  '-': { key: 'minus', ope: (x, y) => x - y},
+  '+': { key: 'plus', ope: (x, y) => x + y}
+}
 
 for (let i = 0; i < 10; i++) {
   numberButtons.push(document.getElementById(`js-calc-${i}`))
@@ -44,34 +44,70 @@ function calc() {
   return resultValue
 }
 
-clear.addEventListener('click', (e) => {
-  e.preventDefault()
+function onNumber(number) {
+  // number is String
+  console.log(number)
+  setResult(number)
+}
+
+function onOperator(ope) {
+  console.log(ope.key)
+  setType(ope, value)
+}
+
+function onEqual() {
+  console.log('equal')
+  tempValue = calc()
+  value = 0
+}
+
+function onClear() {
   console.log('clear')
   value = 0
   type = ''
   setResult(value)
-})
+}
 
+// Button Event
 numberButtons.forEach(($btn, i) => {
   $btn.addEventListener('click', (e) => {
     e.preventDefault()
-    console.log(i)
-    setResult(`${i}`)
+    onNumber(`${i}`)
   })
 })
 
-
-operators.forEach(ope => {
+Object.values(operators).forEach(ope => {
   document.getElementById(`js-calc-${ope.key}`).addEventListener('click', (e) => {
     e.preventDefault()
-    console.log(ope.key)
-    setType(ope, value)
+    onOperator(ope)
   })
 })
 
 equal.addEventListener('click', (e) => {
   e.preventDefault()
-  console.log('equal')
-  tempValue = calc()
-  value = 0
+  onEqual()
+})
+
+clear.addEventListener('click', (e) => {
+  e.preventDefault()
+  onClear()
+})
+
+// Keyboard Event
+document.addEventListener('keyup', (e) => {
+  if (e.key.match(/[0-9]/)) {
+    onNumber(e.key)
+  }
+
+  if (e.key in operators) {
+    onOperator(operators[e.key])
+  }
+
+  if (e.key === '=' || e.key === 'Enter') {
+    onEqual()
+  }
+
+  if (e.key === 'c') {
+    onClear()
+  }
 })

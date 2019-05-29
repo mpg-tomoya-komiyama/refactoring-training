@@ -1,17 +1,29 @@
 export default class Calculator {
   static get OPERATORS() {
     return {
-      '/': { key: 'divided',    ope: (x, y) => x / y},
-      '*': { key: 'multiplied', ope: (x, y) => x * y},
-      '-': { key: 'minus',      ope: (x, y) => x - y},
-      '+': { key: 'plus',       ope: (x, y) => x + y}
+      divided:    (x, y) => x / y,
+      multiplied: (x, y) => x * y,
+      minus:      (x, y) => x - y,
+      plus:       (x, y) => x + y
+    }
+  }
+
+  static get KEY_OPERATOR_MAP() {
+    return {
+      '/': 'divided',
+      '*': 'multiplied',
+      '-': 'minus',
+      '+': 'plus'
     }
   }
 
   constructor() {
+    // 入力中の値
     this.value = 0
-    this.type = ''
+    // 内部的な現在の値
     this.tempValue = 0
+    // 現在指定されている演算子
+    this.type = null
   }
 
   bind(container) {
@@ -35,10 +47,10 @@ export default class Calculator {
       })
     })
 
-    Object.values(Calculator.OPERATORS).forEach(ope => {
-      document.getElementById(`js-calc-${ope.key}`).addEventListener('click', (e) => {
+    Object.keys(Calculator.OPERATORS).forEach(key => {
+      document.getElementById(`js-calc-${key}`).addEventListener('click', (e) => {
         e.preventDefault()
-        this.onOperator(ope)
+        this.onOperator(key)
       })
     })
 
@@ -59,8 +71,8 @@ export default class Calculator {
         this.onNumber(e.key)
       }
 
-      if (e.key in Calculator.OPERATORS) {
-        this.onOperator(Calculator.OPERATORS[e.key])
+      if (e.key in Calculator.KEY_OPERATOR_MAP) {
+        this.onOperator(Calculator.KEY_OPERATOR_MAP[e.key])
       }
 
       if (e.key === '=' || e.key === 'Enter') {
@@ -79,7 +91,7 @@ export default class Calculator {
     } else {
       this.value = parseFloat(val)
     }
-    this.result.innerHTML = String(parseFloat(this.value, 10))
+    this.applyResult(String(parseFloat(this.value, 10)))
   }
 
   setType(ope, val) {
@@ -89,14 +101,21 @@ export default class Calculator {
       this.tempValue = val
     }
     this.type = ope
-    console.log(ope.key, val);
     this.value = 0
   }
 
   calc() {
-    var resultValue = this.type ? this.type.ope(this.tempValue, this.value) : this.tempValue
-    this.result.innerHTML = String(resultValue)
+    var resultValue = this.type ? this.type(this.tempValue, this.value) : this.tempValue
+    this.applyResult(String(resultValue))
     return resultValue
+  }
+
+  applyResult(val) {
+    if (this.result) {
+      this.result.innerHTML = val
+    } else {
+      this.showValue = val
+    }
   }
 
   onNumber(number) {
@@ -105,15 +124,14 @@ export default class Calculator {
     this.setResult(number)
   }
 
-  onOperator(ope) {
-    console.log(ope.key)
-    this.setType(ope, this.value)
+  onOperator(key) {
+    console.log(key)
+    this.setType(Calculator.OPERATORS[key], this.value)
   }
 
   onEqual() {
     console.log('equal')
     this.tempValue = this.calc()
-    this.value = 0
   }
 
   onClear() {

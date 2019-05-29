@@ -27,7 +27,8 @@
   "scripts": {
     "start": "webpack-dev-server",
     "build": "webpack",
-    "test": "ava --verbose"
+    "test": "ava --verbose",
+    "watch:test": "ava --watch"
   },
   "ava": {
     "require": [

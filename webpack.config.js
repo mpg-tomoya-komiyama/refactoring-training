@@ -44,7 +44,7 @@ module.exports = {
 		]
 	},
 	entry: {
-		calc: ['./src/calc', './src/style.scss'],
+		calc: ['./src/index.js', './src/style.scss'],
 	},
 	output: {
 		filename: '[name].js',

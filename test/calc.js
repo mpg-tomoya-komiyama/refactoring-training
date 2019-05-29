@@ -1,7 +1,8 @@
 import test from 'ava'
-import Calculator from 'src/calc.js'
+import Calculator from '../src/calc'
 
 test('hoge', t => {
-  console.log(Calculator)
+  const calculator = new Calculator()
+  console.log(calculator)
   t.pass()
 })

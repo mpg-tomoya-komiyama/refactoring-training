@@ -1,113 +1,143 @@
-const numberButtons = []
-const operators = {
-  '/': { key: 'divided', ope: (x, y) => x / y},
-  '*': { key: 'multiplied', ope: (x, y) => x * y},
-  '-': { key: 'minus', ope: (x, y) => x - y},
-  '+': { key: 'plus', ope: (x, y) => x + y}
-}
-
-for (let i = 0; i < 10; i++) {
-  numberButtons.push(document.getElementById(`js-calc-${i}`))
-}
-
-const result = document.getElementById('js-calc-result')
-const clear = document.getElementById('js-calc-clear')
-const equal = document.getElementById('js-calc-equal')
-
-var value = 0
-var type = ''
-var tempValue = 0
-
-function setResult(val) {
-  if (value !== 0) {
-    value = parseFloat(value + val)
-  } else {
-    value = parseFloat(val)
-  }
-  result.innerHTML = String(parseFloat(value, 10))
-}
-
-function setType(ope, val) {
-  if (type) {
-    tempValue = calc()
-  } else {
-    tempValue = val
-  }
-  type = ope
-  console.log(ope.key, val);
-  value = 0
-}
-
-function calc() {
-  var resultValue = type ? type.ope(tempValue, value) : tempValue
-  result.innerHTML = String(resultValue)
-  return resultValue
-}
-
-function onNumber(number) {
-  // number is String
-  console.log(number)
-  setResult(number)
-}
-
-function onOperator(ope) {
-  console.log(ope.key)
-  setType(ope, value)
-}
-
-function onEqual() {
-  console.log('equal')
-  tempValue = calc()
-  value = 0
-}
-
-function onClear() {
-  console.log('clear')
-  value = 0
-  type = ''
-  setResult(value)
-}
-
-// Button Event
-numberButtons.forEach(($btn, i) => {
-  $btn.addEventListener('click', (e) => {
-    e.preventDefault()
-    onNumber(`${i}`)
-  })
-})
-
-Object.values(operators).forEach(ope => {
-  document.getElementById(`js-calc-${ope.key}`).addEventListener('click', (e) => {
-    e.preventDefault()
-    onOperator(ope)
-  })
-})
-
-equal.addEventListener('click', (e) => {
-  e.preventDefault()
-  onEqual()
-})
-
-clear.addEventListener('click', (e) => {
-  e.preventDefault()
-  onClear()
-})
-
-// Keyboard Event
-document.addEventListener('keyup', (e) => {
-  if (e.key.match(/[0-9]/)) {
-    onNumber(e.key)
+export default class Calculator {
+  static get OPERATORS() {
+    return {
+      divided:    (x, y) => x / y,
+      multiplied: (x, y) => x * y,
+      minus:      (x, y) => x - y,
+      plus:       (x, y) => x + y
+    }
   }
 
-  if (e.key in operators) {
-    onOperator(operators[e.key])
+  static get KEY_OPERATOR_MAP() {
+    return {
+      '/': 'divided',
+      '*': 'multiplied',
+      '-': 'minus',
+      '+': 'plus'
+    }
   }
 
-  if (e.key === '=' || e.key === 'Enter') {
-    onEqual()
+  constructor() {
+    // 入力中の値
+    this.value = 0
+    // 内部的な現在の値
+    this.tempValue = 0
+    // 現在指定されている演算子
+    this.type = null
   }
 
-  if (e.key === 'c') {
-    onClear()
+  bind(container) {
+    this.result = container.querySelector('#js-calc-result')
+    this.clear = container.querySelector('#js-calc-clear')
+    this.equal = container.querySelector('#js-calc-equal')
+    this.numberButtons = []
+    for (let i = 0; i < 10; i++) {
+      this.numberButtons.push(document.querySelector(`#js-calc-${i}`))
+    }
+
+    this.addEvent()
+    this.bindKey()
   }
-})
+
+  addEvent() {
+    this.numberButtons.forEach(($btn, i) => {
+      $btn.addEventListener('click', (e) => {
+        e.preventDefault()
+        this.onNumber(`${i}`)
+      })
+    })
+
+    Object.keys(Calculator.OPERATORS).forEach(key => {
+      document.getElementById(`js-calc-${key}`).addEventListener('click', (e) => {
+        e.preventDefault()
+        this.onOperator(key)
+      })
+    })
+
+    this.equal.addEventListener('click', (e) => {
+      e.preventDefault()
+      this.onEqual()
+    })
+
+    this.clear.addEventListener('click', (e) => {
+      e.preventDefault()
+      this.onClear()
+    })
+  }
+
+  bindKey() {
+    document.addEventListener('keyup', (e) => {
+      if (e.key.match(/[0-9]/)) {
+        this.onNumber(e.key)
+      }
+
+      if (e.key in Calculator.KEY_OPERATOR_MAP) {
+        this.onOperator(Calculator.KEY_OPERATOR_MAP[e.key])
+      }
+
+      if (e.key === '=' || e.key === 'Enter') {
+        this.onEqual()
+      }
+
+      if (e.key === 'c') {
+        this.onClear()
+      }
+    })
+  }
+
+  setResult(val) {
+    if (this.value !== 0) {
+      this.value = parseFloat(this.value + val)
+    } else {
+      this.value = parseFloat(val)
+    }
+    this.applyResult(String(parseFloat(this.value, 10)))
+  }
+
+  setType(ope, val) {
+    if (this.type) {
+      this.tempValue = this.calc()
+    } else {
+      this.tempValue = val
+    }
+    this.type = ope
+    this.value = 0
+  }
+
+  calc() {
+    var resultValue = this.type ? this.type(this.tempValue, this.value) : this.tempValue
+    this.applyResult(String(resultValue))
+    return resultValue
+  }
+
+  applyResult(val) {
+    if (this.result) {
+      this.result.innerHTML = val
+    } else {
+      this.showValue = val
+    }
+  }
+
+  onNumber(number) {
+    // number is String
+    console.log(number)
+    this.setResult(number)
+  }
+
+  onOperator(key) {
+    console.log(key)
+    this.setType(Calculator.OPERATORS[key], this.value)
+  }
+
+  onEqual() {
+    console.log('equal')
+    this.tempValue = this.calc()
+  }
+
+  onClear() {
+    console.log('clear')
+    this.value = 0
+    this.type = ''
+    this.setResult(this.value)
+  }
+}

@@ -17,13 +17,14 @@ export default class Calculator {
     }
   }
 
-  constructor() {
+  constructor(initValue = 0, onCalc = () => {}) {
     // 入力中の値
-    this.value = 0
+    this.value = initValue
     // 内部的な現在の値
-    this.tempValue = 0
+    this.tempValue = initValue
     // 現在指定されている演算子
     this.type = null
+    this.onCalc = onCalc
   }
 
   bind(container) {
@@ -37,6 +38,7 @@ export default class Calculator {
 
     this.addEvent()
     this.bindKey()
+    this.applyResult(this.value)
   }
 
   addEvent() {
@@ -107,6 +109,7 @@ export default class Calculator {
   calc() {
     var resultValue = this.type ? this.type(this.tempValue, this.value) : this.tempValue
     this.applyResult(String(resultValue))
+    this.onCalc(resultValue)
     return resultValue
   }
 
